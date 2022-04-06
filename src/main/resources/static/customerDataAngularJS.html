@@ -1,0 +1,286 @@
+<html lang="EN">
+<head>
+    <script
+            src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js"></script>
+
+    <title>Spring Boot AngularJS example</title>
+    <script>
+        const app = angular.module("PaymentApp", []);
+
+        //Controller Part
+        app.controller("PaymentController", function ($scope, $http) {
+            $scope.showForm = false;
+            $scope.showTable = true;
+            $scope.payments = [];
+            $scope.paymentForm = {
+                paymentType: null,
+                mobileNumber: null,
+                amount: null,
+                commission: null,
+                identityNumber: null,
+                accountNumber: null,
+                send: false
+            };
+
+            //Now load the data from server
+            _refreshPaymentData();
+
+            //HTTP POST methods for add Payment
+            $scope.submitPayment = function () {
+
+                document.getElementById('form-submit').disabled = true
+                $http({
+                    method: 'POST',
+                    url: '/save-payment',
+                    data: angular.toJson($scope.paymentForm),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(_success, _error);
+            };
+
+            /* Private Methods */
+
+            //HTTP GET- get all payments collection
+            function _refreshPaymentData() {
+                $http({
+                    method: 'GET',
+                    url: 'http://localhost:8080/get-all-payments'
+                }).then(function successCallback(response) {
+                    $scope.customers = response.data;
+                }, function errorCallback(response) {
+                    console.log(response.statusText);
+                });
+            }
+
+            function _success() {
+                document.getElementById('form-submit').disabled = false;
+                showHomeForm();
+                _refreshPaymentData();
+                _clearFormData()
+            }
+
+            function _error(response) {
+                document.getElementById('form-submit').disabled = false;
+                alert(response.message)
+                console.log(response.statusText);
+            }
+
+            $scope.showMobileForm = function () {
+                $scope.paymentForm.paymentType = 'MOBILE';
+                document.getElementById('paymentForm').style.display = 'block';
+                document.getElementById('tr_identity_number').style.display = 'none';
+                document.getElementById('tr_account_number').style.display = 'none';
+                document.getElementById('paymentTable').style.display = 'none';
+
+            }
+
+            $scope.showCharityForm = function () {
+                $scope.paymentForm.paymentType = 'CHARITY';
+                document.getElementById('paymentForm').style.display = 'block';
+                document.getElementById('tr_identity_number').style.display = 'block';
+                document.getElementById('tr_account_number').style.display = 'none';
+                document.getElementById('paymentTable').style.display = 'none';
+
+            }
+
+            $scope.showUtilityForm = function () {
+                $scope.paymentForm.paymentType = 'UTILITY_TAX';
+                document.getElementById('paymentForm').style.display = 'block';
+                document.getElementById('tr_identity_number').style.display = 'block';
+                document.getElementById('tr_account_number').style.display = 'none';
+                document.getElementById('paymentTable').style.display = 'none';
+
+            }
+
+            $scope.showFinancialForm = function () {
+                $scope.paymentForm.paymentType = 'FINANCIAL_SERVICES';
+                document.getElementById('paymentForm').style.display = 'block';
+                document.getElementById('tr_identity_number').style.display = 'block';
+                document.getElementById('tr_account_number').style.display = 'block';
+                document.getElementById('paymentTable').style.display = 'none';
+
+            }
+
+            $scope.calculateCommission = function () {
+                let commission = $scope.paymentForm.amount * 0.01;
+                if (commission < 0.5) {
+                    commission = 0.5;
+                }
+
+                $scope.paymentForm.commission = commission;
+            }
+
+            function showHomeForm () {
+                document.getElementById('paymentForm').style.display = 'none';
+                document.getElementById('tr_identity_number').style.display = 'none';
+                document.getElementById('tr_account_number').style.display = 'none';
+                document.getElementById('paymentTable').style.display = 'block';
+            };
+
+            //Clear the form
+            function _clearFormData() {
+                $scope.paymentForm.paymentType = null;
+                $scope.paymentForm.mobileNumber = null;
+                $scope.paymentForm.amount = null;
+                $scope.paymentForm.commission = null;
+                $scope.paymentForm.identityNumber = null;
+                $scope.paymentForm.identityNumber = null;
+                $scope.paymentForm.accountNumber = null;
+                $scope.paymentForm.send = false;
+
+            }
+        });
+    </script>
+    <style>
+        .blue-button {
+            background: #25A6E1;
+            padding: 3px 5px;
+            color: #fff;
+            font-family: 'Helvetica Neue', sans-serif;
+            font-size: 12px;
+            border-radius: 2px;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 4px;
+            border: 1px solid #1A87B9
+        }
+
+        .red-button {
+            background: #CD5C5C;
+            padding: 3px 5px;
+            color: #fff;
+            font-family: 'Helvetica Neue', sans-serif;
+            font-size: 12px;
+            border-radius: 2px;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 4px;
+            border: 1px solid #CD5C5C
+        }
+
+        table {
+            font-family: "Helvetica Neue", Helvetica, sans-serif;
+            width: 100%;
+        }
+
+        caption {
+            text-align: left;
+            color: silver;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 5px;
+        }
+
+        th {
+            background: SteelBlue;
+            color: white;
+        }
+
+        tbody tr:nth-child(even) {
+            background: WhiteSmoke;
+        }
+
+        tbody tr td:nth-child(2) {
+            text-align: center;
+        }
+
+        tbody tr td:nth-child(3), tbody tr td:nth-child(4) {
+            text-align: center;
+            font-family: monospace;
+        }
+
+        tfoot {
+            background: SeaGreen;
+            color: white;
+            text-align: right;
+        }
+
+        tfoot tr th:last-child {
+            font-family: monospace;
+        }
+
+        td, th {
+            border: 1px solid gray;
+            width: 25%;
+            text-align: left;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body ng-app="PaymentApp" ng-controller="PaymentController">
+<h1>Customer Mart</h1>
+<form id="paymentForm" style="display: none" ng-submit="submitPayment()">
+    <table>
+
+        <tr>
+            <th colspan="2">New Payment</th>
+        </tr>
+        <tr>
+            <td>Payment Type</td>
+            <td><label>
+                <input type="text" ng-model="paymentForm.paymentType" readonly="readonly"/>
+            </label></td>
+        </tr>
+        <tr>
+            <td>Amount</td>
+            <td><label>
+                <input type="text" ng-model="paymentForm.amount"
+                       oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
+                       ng-change="calculateCommission()"/>
+            </label></td>
+        </tr>
+        <tr>
+            <td>Mobile Number</td>
+            <td><label>
+                <input type="text" pattern="^5[0-9]{8}" title="phone must be 5xxxxxxxx format"
+                       oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
+                       ng-model="paymentForm.mobileNumber"/>
+            </label></td>
+        </tr>
+
+        <tr id="tr_identity_number">
+            <td>Identity Number </td>
+            <td><label>
+                <input type="text" pattern="[0-9]{11}"  title="must be 11 digits"
+                       oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
+                       ng-model="paymentForm.identityNumber"
+                       />
+            </label></td>
+        </tr>
+
+        <tr id="tr_account_number" >
+            <td>Account Number </td>
+            <td><label>
+                <input type="text" pattern="^GE[0-9]{2}[A-Z]{2}[0-9]{16}"  title="phone must be GE00XX0000000000000000 format"  ng-model="paymentForm.accountNumber"
+                       />
+            </label></td>
+        </tr>
+
+        <tr>
+            <td>Commission </td>
+            <td><label>
+                <input type="text" ng-model="paymentForm.commission" readonly="readonly" />
+            </label></td>
+        </tr>
+
+        <tr>
+            <td colspan="2"><input type="submit" id="form-submit" value="Submit"
+                                   class="blue-button"/></td>
+        </tr>
+    </table>
+</form>
+<table id="paymentTable">
+
+
+    <tr>
+        <td><a ng-click="showMobileForm()" class="blue-button">MOBILE</a>
+            | <a ng-click="showCharityAndUtilityForm()" class="red-button">CHARITY</a></td>
+    </tr>
+
+    <tr>
+        <td><a ng-click="showCharityAndUtilityForm()" class="blue-button">UTILITY TAX</a>
+            | <a ng-click="showFinancialForm()" class="red-button">FINANCIAL SERVICES</a></td>
+    </tr>
+
+</table>
+</body>
+</html>
